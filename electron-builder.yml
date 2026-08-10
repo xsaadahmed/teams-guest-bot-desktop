@@ -1,0 +1,47 @@
+# Unsigned builds: Windows SmartScreen will warn on first run until a code-signing cert is added.
+appId: com.eand.teams-guest-bot-desktop
+productName: Teams Guest Bot
+copyright: Copyright © e&
+directories:
+  output: release
+  buildResources: electron/build
+files:
+  - build/**
+  - public/**
+  - electron-dist/**
+  - transcribe/**
+  - package.json
+  - node_modules/**
+extraResources:
+  - from: windows/WasapiLoopbackRecorder/publish
+    to: native/windows/WasapiLoopbackRecorder/publish
+  - from: windows/DismissTeamsDialog/publish
+    to: native/windows/DismissTeamsDialog/publish
+  - from: windows/chromium-policy.json
+    to: native/windows/chromium-policy.json
+  - from: node_modules/playwright-core/.local-browsers
+    to: native/playwright-browsers
+asarUnpack:
+  - "**/*.node"
+  - transcribe/**
+  - node_modules/@playwright/**
+  - node_modules/playwright/**
+  - node_modules/playwright-core/**
+win:
+  icon: electron/build/icon.png
+  # Skip winCodeSign extraction — avoids symlink errors on Windows without Developer Mode/admin.
+  # We are not code-signing yet; SmartScreen will warn on first run until a cert is added.
+  signAndEditExecutable: false
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: TeamsGuestBot-Setup-${version}.exe
+portable:
+  artifactName: TeamsGuestBot-Portable-${version}.exe

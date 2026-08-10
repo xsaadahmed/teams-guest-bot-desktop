@@ -1,0 +1,89 @@
+@echo off
+setlocal EnableExtensions
+
+REM Entry point for dev machines AND locked-down corporate laptops.
+REM Portable mode: after Unpack-Bundle.cmd (or tar -xf deployment\TeamsGuestBot-Windows.zip)
+REM uses bundled node.exe - no global Node, npm, or internet required.
+
+cd /d "%~dp0"
+
+echo == teams-guest-bot (Windows-native) ==
+
+set "PORTABLE=0"
+if exist "node\node.exe" if exist "build\server.js" if exist "node_modules\@playwright\test" (
+  set "PORTABLE=1"
+)
+
+if "%PORTABLE%"=="1" (
+  set "NODE_EXE=%~dp0node\node.exe"
+  set "PLAYWRIGHT_BROWSERS_PATH=0"
+  goto :runtime_ready
+)
+
+REM Dev fallback: global Node + optional npm build
+where node >nul 2>&1
+if errorlevel 1 (
+  echo ERROR: Portable bundle not extracted and Node.js not on PATH.
+  echo.
+  echo Corporate laptop: run Unpack-Bundle.cmd first ^(or: tar -xf deployment\TeamsGuestBot-Windows.zip^)
+  echo Dev machine: install Node from https://nodejs.org or extract the portable bundle.
+  exit /b 1
+)
+set "NODE_EXE=node"
+
+if /i "%~1"=="/force" set "NEEDS_BUILD=1"
+if not exist "build\server.js" set "NEEDS_BUILD=1"
+if defined NEEDS_BUILD (
+  if not exist "node_modules\" (
+    echo Installing npm dependencies...
+    call npm install
+    if errorlevel 1 exit /b 1
+  )
+  echo Building TypeScript...
+  call npm run build
+  if errorlevel 1 exit /b 1
+)
+
+:runtime_ready
+for /f "delims=" %%v in ('"%NODE_EXE%" -v') do echo Node: %%v
+if "%PORTABLE%"=="1" echo Mode: portable bundle ^(no npm/internet required^)
+
+set "HELPER=windows\WasapiLoopbackRecorder\publish\WasapiLoopbackRecorder.exe"
+set "DISMISS=windows\DismissTeamsDialog\publish\DismissTeamsDialog.exe"
+if exist "%HELPER%" (
+  echo WASAPI helper: %HELPER%
+) else (
+  echo WARNING: WASAPI helper not found at %HELPER% - recording will fail.
+)
+if exist "%DISMISS%" (
+  echo Dialog dismiss helper: %DISMISS%
+) else (
+  echo WARNING: Dismiss helper not found at %DISMISS% - ms-teams protocol prompt may appear.
+)
+
+if not defined RECORDINGS_DIR set "RECORDINGS_DIR=%CD%\Recordings"
+if not exist "%RECORDINGS_DIR%" mkdir "%RECORDINGS_DIR%"
+echo Recordings directory: %RECORDINGS_DIR%
+
+REM Corporate laptops often block Playwright temp under default %%TEMP%% (EPERM).
+REM Use a project-local folder unless TEAMS_BOT_USE_SYSTEM_TEMP=1.
+if not "%TEAMS_BOT_USE_SYSTEM_TEMP%"=="1" if /i not "%TEAMS_BOT_USE_SYSTEM_TEMP%"=="true" (
+  if not exist "%CD%\.bot-temp" mkdir "%CD%\.bot-temp"
+  set "TEMP=%CD%\.bot-temp"
+  set "TMP=%CD%\.bot-temp"
+)
+if not defined TEAMS_BOT_BROWSER_PROFILE set "TEAMS_BOT_BROWSER_PROFILE=%CD%\.teams-bot-browser-profile"
+
+if defined LOCAL_PARTICIPANT_NAME (
+  echo Local participant [mute-gated mic]: %LOCAL_PARTICIPANT_NAME%
+) else (
+  echo Local participant name: not set in env - Web UI will ask on first open ^(saved to .teams-bot-config.json^)
+)
+
+if not defined PORT set "PORT=3000"
+REM Optional: set DISABLE_ROSTER_AUTOMATION=1 to stop the bot opening the People panel (UI debugging).
+if "%DISABLE_ROSTER_AUTOMATION%"=="1" echo DISABLE_ROSTER_AUTOMATION=1 ^(People panel + mute tracker off^)
+if /i "%DISABLE_ROSTER_AUTOMATION%"=="true" echo DISABLE_ROSTER_AUTOMATION=true ^(People panel + mute tracker off^)
+echo Starting bot server ^(port %PORT%, auto-fallback: 3001, 3847^)...
+echo Web UI opens on the port shown after "listening on".
+"%NODE_EXE%" build\server.js

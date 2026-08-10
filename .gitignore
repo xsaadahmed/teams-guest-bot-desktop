@@ -1,0 +1,55 @@
+node_modules/
+/build/
+electron-dist/
+release/
+electron-resources/
+node/
+PORTABLE-BUNDLE.txt
+Recordings/
+.teams-bot-browser-profile/
+.bot-temp/
+*.log
+deployment-build.log
+.env
+.teams-bot-config.json
+join-payload.json
+join-payload-temp.json
+bot-restart.log.err
+Testing_*.transcript.txt
+Testing_*.captions.json
+test_stdin.txt
+windows/WasapiLoopbackRecorder/test.wav
+windows/test-*.js
+windows/test-*.ps1
+windows/analyze-wav.js
+
+# Portable deployment bundle lives in teams-guest-bot-windows (companion repo)
+deployment/TeamsGuestBot-Windows.zip
+deployment/TeamsGuestBot-Windows.zip.*
+deployment/TeamsGuestBot-Windows.zip.manifest
+deployment/.staging/
+deployment/.cache/
+
+# Python transcription venv + caches
+transcribe/.venv/
+__pycache__/
+*.pyc
+
+# .NET build output for the Windows helpers (windows/build-helper.ps1 regenerates these;
+# the self-contained publish/ exes are large and don't belong in git)
+windows/WasapiLoopbackRecorder/bin/
+windows/WasapiLoopbackRecorder/obj/
+windows/WasapiLoopbackRecorder/publish/
+windows/DismissTeamsDialog/bin/
+windows/DismissTeamsDialog/obj/
+windows/DismissTeamsDialog/publish/
+# Web UI (cozy-meet-helper) — source in web/, built output in public/
+web/.lovable/
+web/node_modules/
+web/.output/
+web/.wrangler/
+web/dist/
+web/.tanstack/
+web/.nitro/
+public/
+
