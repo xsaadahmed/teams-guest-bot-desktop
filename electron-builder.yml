@@ -2,6 +2,8 @@
 appId: com.eand.teams-guest-bot-desktop
 productName: Teams Guest Bot
 copyright: Copyright © e&
+# CI uploads assets via .github/workflows/release.yml — do not auto-publish from electron-builder.
+publish: null
 directories:
   output: release
   buildResources: electron/build

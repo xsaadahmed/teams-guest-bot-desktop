@@ -16,7 +16,7 @@
     "build:deployment": "powershell -ExecutionPolicy Bypass -File scripts/build-deployment.ps1",
     "playwright:install": "powershell -ExecutionPolicy Bypass -Command \"$env:PLAYWRIGHT_BROWSERS_PATH='0'; npx playwright install chromium\"",
     "electron:dev": "npm run build:all && npm run build:electron && electron .",
-    "electron:build": "npm run build:all && npm run build:windows-helper && npm run playwright:install && npm run build:electron && electron-builder --config electron-builder.yml"
+    "electron:build": "npm run build:all && npm run build:windows-helper && npm run playwright:install && npm run build:electron && electron-builder --config electron-builder.yml --publish never"
   },
   "license": "MIT",
   "dependencies": {
