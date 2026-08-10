@@ -40,5 +40,3 @@ jobs:
             release/TeamsGuestBot-Setup-*.exe
             release/TeamsGuestBot-Portable-*.exe
           generate_release_notes: true
-          # Update existing v1.0.0 release if re-running the workflow.
-          allow_updates: true
