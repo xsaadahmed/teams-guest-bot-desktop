@@ -1,6 +1,6 @@
 {
   "name": "teams-guest-bot-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Teams Guest Bot — Windows desktop app (Electron). Records Teams meetings via guest browser join.",
   "author": "e&",
   "main": "electron-dist/main.js",
@@ -8,7 +8,7 @@
     "build": "tsc",
     "build:web": "powershell -ExecutionPolicy Bypass -File scripts/build-web.ps1",
     "build:all": "npm run build && npm run build:web",
-    "build:electron": "tsc -p electron/tsconfig.json",
+    "build:electron": "tsc -p electron/tsconfig.json && powershell -Command \"Copy-Item -Force electron/build/tray-icon.png electron-dist/tray-icon.png\"",
     "start": "node build/server.js",
     "dev": "ts-node src/server.ts",
     "start:windows": "Start-Bot.cmd",

@@ -226,6 +226,7 @@ async function requestQuit(): Promise<void> {
 function getTrayIcon(): Electron.NativeImage {
   const candidates = [
     path.join(__dirname, 'tray-icon.png'),
+    path.join(__dirname, '..', 'electron', 'build', 'tray-icon.png'),
     path.join(__dirname, '..', 'electron', 'tray-icon.png'),
   ];
   for (const candidate of candidates) {

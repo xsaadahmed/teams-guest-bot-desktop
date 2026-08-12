@@ -164,6 +164,33 @@ async function resolvePythonLauncher(): Promise<string | null> {
   });
 }
 
+async function discoverWindowsPythonFromWhere(): Promise<string[]> {
+  if (process.platform !== 'win32') return [];
+  return new Promise((resolve) => {
+    const proc = spawn('where.exe', ['python'], {
+      stdio: ['ignore', 'pipe', 'ignore'],
+      windowsHide: true,
+    });
+    let stdout = '';
+    proc.stdout.on('data', (d: Buffer) => {
+      stdout += d.toString();
+    });
+    proc.on('error', () => resolve([]));
+    proc.on('exit', (code) => {
+      if (code !== 0) {
+        resolve([]);
+        return;
+      }
+      const paths = stdout
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line && fs.existsSync(line))
+        .filter((line) => !line.toLowerCase().includes('windowsapps'));
+      resolve(paths);
+    });
+  });
+}
+
 async function discoverPythonCandidates(): Promise<string[]> {
   const candidates: string[] = [];
   const add = (p: string | undefined | null) => {
@@ -179,6 +206,15 @@ async function discoverPythonCandidates(): Promise<string[]> {
 
   if (process.platform === 'win32') {
     add(await resolvePythonLauncher());
+    for (const p of await discoverWindowsPythonFromWhere()) {
+      add(p);
+    }
+    const home = process.env.USERPROFILE?.trim();
+    if (home) {
+      for (const name of ['anaconda3', 'miniconda3', 'mambaforge']) {
+        add(path.join(home, name, 'python.exe'));
+      }
+    }
   }
 
   for (const cmd of ['python', 'python3']) {
